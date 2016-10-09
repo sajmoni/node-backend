@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+
+const utils = require('../server/src/utils');
+const { encrypt } = require('../server/src/user-registry');
+
+const cloudantUrl = utils.getDbUrl(process.env);
+const conn = require('nano-blue')(cloudantUrl);
+const dbName = process.env.DB_NAME || 'default';
+const db = conn.use(dbName);
+
+main();
+
+function main() {
+  const command = process.argv[2];
+
+  switch (command) {
+    case 'create-database':
+      return createDatabase();
+    case 'delete-databases':
+      return deleteDatabase();
+    case 'update-views':
+      return updateViews();
+    case 'load-data':
+      return loadData();
+    case 'delete-data':
+      return deleteData();
+    default:
+      console.log('Incorrect usage');
+  }
+}
+
+function createDatabase() {
+  console.log("Creating database...");
+  conn.db.create(dbName);
+}
+
+function deleteDatabase(){
+  console.log("Deleting database...");
+  conn.db.destroy(dbName);
+}
+
+function updateViews() {
+  console.log("Updating views...");
+
+  db.head('_design/views').spread((err, res) => {
+    db.insert(Object.assign({}, utils.getDatabaseViews(), {_rev: res.etag.replace(/"/g, '')}));
+  }).catch(err => {
+    db.insert(utils.getDatabaseViews());
+  });
+}
+
+function deleteData(){
+  console.log("Deleting data...");
+
+  db.list().spread(body => {
+    let docs = body.rows.filter(doc => !doc.id.includes("_design"));
+    docs = docs.map(doc => ({
+      _id: doc.id,
+      _rev: doc.value.rev,
+      _deleted: true
+    }));
+    db.bulk({ docs });
+  });
+}
+
+function loadData() {
+  console.log("Loading data...");
+  db.insert();
+
+  const defaultDocs = [
+    { _id: 'simon',
+      name: 'Simon',
+      type: 'user',
+      email: "simon",
+      password: encrypt("asd")
+    }
+  ];
+
+  db.bulk({ docs: defaultDocs });
+}

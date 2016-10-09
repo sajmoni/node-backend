@@ -1,0 +1,31 @@
+{
+  "name": "node-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha  --recursive server/test -R min",
+    "test:watch": "npm test -- --watch",
+    "start": "node server/src/index.js",
+    "start:watch": "nodemon server/src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "basic-auth": "^1.0.4",
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "express-sslify": "^1.1.0",
+    "nano-blue": "^0.3.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "mocha": "^3.1.0",
+    "mock-couch": "^0.1.8",
+    "nodemon": "^1.10.2",
+    "sinon": "^1.17.6",
+    "supertest": "^2.0.0"
+  }
+}
